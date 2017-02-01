@@ -29,12 +29,14 @@ router.get('/1234', function(req, res, next) {
   
   var options = {
     method: 'post',
-    body: post,
+    body: JSON.stringify(post),
     json: true,
     url: url
   }
+  console.log(options);
 
   request(options, function (err, res, body) { 
+    
     console.log(err, res, body);
   });
 
@@ -49,7 +51,8 @@ router.post('/', function(req, res, next) {
   console.log('req body', req.body);
 
   domain = 'https://' + req.query.DOMAIN;
-  var url = domain + '/rest/user.current.json?auth=' + req.body.AUTH_ID;
+  auth = req.body.AUTH_ID;
+  var url = domain + '/rest/user.current.json?auth=' + auth;
 
   request(url, function (error, response, body) {
     //console.log(response);
