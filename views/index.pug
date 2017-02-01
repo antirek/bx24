@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+
+  p
+    a(href="javascript:void(0)" onclick="clientCheck();") Проверим?
+
+    script.
+        function clientCheck()
+        {
+            BX24.callMethod('user.current', {}, function(r){
+                alert('Клиенту он сказал, что вас зовут ' + r.data().NAME + ' :-)');
+            });
+        }
