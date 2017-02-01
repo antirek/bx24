@@ -8,6 +8,8 @@ block content
     a(href="javascript:void(0)" onclick="clientCheck();") Проверим?
     br
     a(href="javascript:void(0)" onclick="initCall();") Инит звонка?
+    br
+    a(href="https://bx24.services.mobilon.ru/1234") инит звонка2
 
     script.
         function clientCheck() {
@@ -25,6 +27,6 @@ block content
                 CRM_CREATE: '1'
             }, function(r){
                 console.log(r)
-                alert('Клиенту он сказал, что вас зовут ' + r + ' :-)');
+                alert('Инит готов');
             });
         }
