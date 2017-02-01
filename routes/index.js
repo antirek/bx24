@@ -25,7 +25,7 @@ router.get('/1234', function(req, res, next) {
     CRM_CREATE: '1'
   };
 
-  var url = domain + 'rest/telephony.externalcall.register.json';
+  var url = domain + '/rest/telephony.externalcall.register.json';
   
   var options = {
     method: 'post',
@@ -33,9 +33,10 @@ router.get('/1234', function(req, res, next) {
     json: true,
     url: url
   }
+
   request(options, function (err, res, body) { 
     console.log(err, res, body);
-  }
+  });
 
 
   res.render('index', { title: 'Express' });
