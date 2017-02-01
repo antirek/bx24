@@ -14,20 +14,20 @@ router.get('/', function(req, res, next) {
 router.post('/', function(req, res, next) {
   console.log('params', req.params);
   console.log('req query', req.query);
+  console.log('req body', req.body);
 
   var domain = 'https://' + req.query.DOMAIN;
-  var url = domain + '/rest/user.current.json?auth=';
+  var url = domain + '/rest/user.current.json?auth=' + req.body.AUTH_ID;
 
   request(url, function (error, response, body) {
-    console.log(response);
+    //console.log(response);
     if (!error && response.statusCode == 200) {
-      console.log(body);
-      res.render('index', { title: 'Express' });
+      console.log(body);      
     }else {
       console.log(error);
     }
   })
-
+  res.render('index', { title: 'Express' });
   
 });
 
