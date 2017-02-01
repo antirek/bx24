@@ -6,11 +6,25 @@ block content
 
   p
     a(href="javascript:void(0)" onclick="clientCheck();") Проверим?
+    br
+    a(href="javascript:void(0)" onclick="initCall();") Инит звонка?
 
     script.
-        function clientCheck()
-        {
+        function clientCheck() {
             BX24.callMethod('user.current', {}, function(r){
                 alert('Клиенту он сказал, что вас зовут ' + r.data().NAME + ' :-)');
+            });
+        }
+
+        function initCall() {
+            BX24.callMethod('telephony.externalcall.register', {
+                USER_PHONE_INNER: '201',
+                USER_ID: '4',
+                PHONE_NUMBER: '8912',
+                TYPE: '2',
+                CRM_CREATE: '1'
+            }, function(r){
+                console.log(r)
+                alert('Клиенту он сказал, что вас зовут ' + r + ' :-)');
             });
         }
