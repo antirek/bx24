@@ -16,28 +16,31 @@ router.get('/', function(req, res, next) {
 
 router.get('/1234', function(req, res, next) {
 
-  var post = {
-    auth: auth,
-    USER_PHONE_INNER: '201',
-    USER_ID: '4',
-    PHONE_NUMBER: '891234',
-    TYPE: '2',
-    CRM_CREATE: '1'
-  };
+  var post = [
+    'auth=' + auth,
+    'USER_PHONE_INNER=201',
+    'USER_ID=4',
+    'PHONE_NUMBER=891234',
+    'TYPE=2',
+    'CRM_CREATE=1'
+  ].join("&");
+
 
   var url = domain + '/rest/telephony.externalcall.register.json';
   
   var options = {
     method: 'post',
-    body: JSON.stringify(post),
-    json: true,
-    url: url
+    body: post,
+    url: url,
+    headers: {
+      'Content-Type': 'text/plain'
+    }
   }
   console.log(options);
 
   request(options, function (err, res, body) { 
-    
-    console.log(err, res, body);
+    console.log('body', body);
+    //console.log(err, res, body);
   });
 
 
