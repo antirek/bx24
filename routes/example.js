@@ -1,7 +1,7 @@
 var express = require('express');
 var session = require('express-session');
 var request = require('request');
-var queryString = require('qs');
+var qs = require('qs');
 
 var router = express.Router();
 
@@ -40,20 +40,51 @@ function getExpiredTime() {
     return 'скоро';
 }
 
-router.get('/', function (req, res) {
-    res.render('example', {
-        path: PATH,
-        session: req.session,
-        expired: getExpired(req.session),
-        expiredTime: getExpiredTime(req.session)
-    })
+router.get('/', function (req, res, next) {
+    var code = req.query.code;
+    var domain = req.query.domain;
+
+    var member_id = req.query.member_id;
+    if (code && domain) {
+        var params = {
+            "grant_type": "authorization_code",
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+            "redirect_uri": REDIRECT_URI,
+            // "scope": SCOPE,
+            "code": code
+        };
+
+        var path = "/oauth/token/";
+
+        query('GET', PROTOCOL + "://" + domain + path, params, function (err, response, body) {
+            console.log(body);
+            if (err) {
+                next(err);
+            } else {
+                req.session.query_data = body;
+                req.session.query_data.ts = Date.now();
+                res.redirect(PATH);
+            }
+        });
+
+    } else {
+        res.render('example', {
+            path: PATH,
+            session: req.session,
+            expired: getExpired(req.session),
+            expiredTime: getExpiredTime(req.session),
+            data: JSON.stringify(req.session.query_data)
+        })
+    }
 });
 
 function query(method, url, data, cb) {
+    console.log(method, url, data);
     request.get({
         method: method,
         url: url,
-        qs: queryString.stringify(data)
+        qs: qs.stringify(data)
     }, cb)
 }
 
@@ -62,31 +93,14 @@ function call(domain, method, params, cb) {
 }
 
 router.get('/auth', function (req, res, next) {
-    var code = req.query.code;
     var domain = req.query.portal;
-
-    var member_id = req.query.member_id;
-
+    var path = "/oauth/authorize/";
     var params = {
-        "grant_type": "authorization_code",
+        "response_type": "code",
         "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
-        "redirect_uri": REDIRECT_URI,
-        "scope": SCOPE,
-        "code": code
+        "redirect_uri": REDIRECT_URI + "/data"
     };
-
-    var path = "/oauth/token/";
-
-    query('GET', PROTOCOL + "://" + domain + path, params, function (err, response, body) {
-        if (err) {
-            next(err);
-        } else {
-            req.session.query_data = body;
-            req.session.query_data.ts = Date.now();
-            res.redirect(PATH);
-        }
-    });
+    res.redirect(PROTOCOL + "://" + domain + path + "?" + qs.stringify(params))
 });
 
 router.get('/refresh', function (req, res, next) {
