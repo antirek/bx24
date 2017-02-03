@@ -1,0 +1,7 @@
+extends layout
+block content
+    if session
+        include parts/_auth
+    else
+        inlucde parts/_refresh
+        include parts/_main
