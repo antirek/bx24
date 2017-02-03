@@ -1,24 +1,24 @@
 var express = require('express');
 var session = require('express-session');
 var request = require('request');
-var queryString = require('querystring');
+var queryString = require('qs');
 
 var router = express.Router();
 
 /**
  * client_id приложения
  */
-var CLIENT_ID = 'app.00000000000000.00000000';
+var CLIENT_ID = 'local.589408534f0362.49262389';
 /**
  * client_secret приложения
  */
-var CLIENT_SECRET = '00000000000000000000000000000000';
+var CLIENT_SECRET = 'h7M6PyIllmD6no65mQA8Ghv8q1ZOVGL8oLgdhAHRMEZZ6Z8zqB';
 
 var PATH = '/example';
 /**
  * полный адрес к приложения
  */
-var REDIRECT_URI = 'http://localhost:3000' + PATH;
+var REDIRECT_URI = 'https://bx24.services.mobilon.ru' + PATH;
 /**
  * scope приложения
  */
@@ -48,20 +48,25 @@ router.get('/', function (req, res) {
         expiredTime: getExpiredTime(req.session)
     })
 });
+
 function query(method, url, data, cb) {
     request.get({
         method: method,
         url: url,
-        qs: queryString(data)
+        qs: queryString.stringify(data)
     }, cb)
 }
+
 function call(domain, method, params, cb) {
     query("POST", PROTOCOL + "://" + domain + "/rest/" + method, params, cb);
 }
-router.get('/auth', function (req, res) {
+
+router.get('/auth', function (req, res, next) {
     var code = req.query.code;
-    var domain = req.query.domain;
+    var domain = req.query.portal;
+
     var member_id = req.query.member_id;
+
     var params = {
         "grant_type": "authorization_code",
         "client_id": CLIENT_ID,
@@ -70,7 +75,9 @@ router.get('/auth', function (req, res) {
         "scope": SCOPE,
         "code": code
     };
+
     var path = "/oauth/token/";
+
     query('GET', PROTOCOL + "://" + domain + path, params, function (err, response, body) {
         if (err) {
             next(err);

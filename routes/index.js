@@ -8,6 +8,7 @@ var APP_KEY = 'ZT7Z87ojxT0FSl3vFhvZ0oseHZhiazJohTSVrromKbIEhdgE1I';
 var domain = null;
 var auth = null;
 
+var sessions = {};
 
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
@@ -19,7 +20,7 @@ router.get('/1234', function(req, res, next) {
   var post = [
     'auth=' + auth,
     'USER_PHONE_INNER=201',
-    'USER_ID=4',
+    'USER_ID=1',
     'PHONE_NUMBER=891234',
     'TYPE=2',
     'CRM_CREATE=1'
