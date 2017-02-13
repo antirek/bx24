@@ -1,12 +1,12 @@
 ul
     li
-        a(href=path + '/test?test=user.current') Информация о пользователе
+        a(href=path + '?test=user.current') Информация о пользователе
     li
-        a(href=path + '/test?test=user.update') Загрузить новую аватарку пользователя
+        a(href=path + '?test=user.update') Загрузить новую аватарку пользователя
     li
-        a(href=path + '/test?test=log.blogpost.add') Опубликовать запись в Живой Ленте
+        a(href=path + '?test=log.blogpost.add') Опубликовать запись в Живой Ленте
     li
-        a(href=path + '/test?test=event.bind') Установить обработчик события
+        a(href=path + '?test=event.bind') Установить обработчик события
 
 a(href=path + '/refresh') Обновить данные авторизации
 br
@@ -14,4 +14,4 @@ br
 a(href=path + '/clear') Очистить данные авторизации
 br
 if data
-    pre=data
+    pre=JSON.stringify(data)

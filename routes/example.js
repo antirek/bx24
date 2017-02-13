@@ -39,43 +39,96 @@ function getExpired() {
 function getExpiredTime() {
     return 'скоро';
 }
+var Session = {};
 
-router.get('/', function (req, res, next) {
-    var code = req.query.code;
-    var domain = req.query.domain;
-
-    var member_id = req.query.member_id;
-    if (code && domain) {
-        var params = {
-            "grant_type": "authorization_code",
-            "client_id": CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
-            "redirect_uri": REDIRECT_URI,
-            // "scope": SCOPE,
-            "code": code
-        };
-
-        var path = "/oauth/token/";
-
-        query('GET', PROTOCOL + "://" + domain + path, params, function (err, response, body) {
-            console.log(body);
-            if (err) {
-                next(err);
-            } else {
-                req.session.query_data = body;
-                req.session.query_data.ts = Date.now();
-                res.redirect(PATH);
-            }
-        });
-
-    } else {
+var Test = function Test(req, res) {
+    console.log('test');
+    console.log('Session', Session);
+    console.log('Session.query_data', Session.query_data);
+    var test = req.query.test;
+    var cb = function (err, response, body) {
         res.render('example', {
             path: PATH,
-            session: req.session,
-            expired: getExpired(req.session),
-            expiredTime: getExpiredTime(req.session),
-            data: JSON.stringify(req.session.query_data)
-        })
+            expired: getExpired(Session),
+            expiredTime: getExpiredTime(Session),
+            data: JSON.stringify(body)
+        });
+    };
+    switch (test) {
+        case "user.current":
+            call(Session.query_data.domain, "user.current", {
+                auth: Session.query_data.access_token
+            }, cb);
+            break;
+        case "user.update":
+            call(Session.query_data.domain, 'user.update', {
+                auth: Session.query_data.access_token
+            }, cb);
+            break;
+        case "event.bind":
+            call(Session.query_data.domain, 'event.bind', {
+                auth: Session.query_data.access_token,
+                "EVENT": "ONCRMLEADADD",
+                "HANDLER": REDIRECT_URI + "/event"
+            }, cb);
+            break;
+        case "log.blogpost.add":
+            call(Session.query_data.domain, 'log.blogpost.add', {
+                auth: Session.query_data.access_token,
+                "POST_TITLE": "Hello world!",
+                "POST_MESSAGE": "Goodbye, cruel world :-("
+            }, cb);
+            break;
+        default:
+            res.render('example', {
+                path: PATH,
+                expired: getExpired(Session),
+                expiredTime: getExpiredTime(Session),
+                data: JSON.stringify(Session.query_data)
+            });
+    }
+
+};
+router.get('/', function (req, res, next) {
+    console.log(Session);
+    var code = req.query.code;
+    var domain = req.query.domain;
+    var test = req.query.test;
+    var member_id = req.query.member_id;
+    if (test) {
+        Test(req, res);
+    } else {
+        if (code && domain) {
+            var params = {
+                "grant_type": "authorization_code",
+                "client_id": CLIENT_ID,
+                "client_secret": CLIENT_SECRET,
+                "redirect_uri": REDIRECT_URI,
+                // "scope": SCOPE,
+                "code": code
+            };
+
+            var path = "/oauth/token/";
+
+            query('GET', PROTOCOL + "://" + domain + path, params, function (err, response, body) {
+                console.log(body);
+                if (err) {
+                    next(err);
+                } else {
+                    Session.query_data = JSON.parse(body);
+                    Session.query_data.ts = Date.now();
+                    res.redirect(PATH);
+                }
+            });
+
+        } else {
+            res.render('example', {
+                path: PATH,
+                expired: getExpired(Session),
+                expiredTime: getExpiredTime(Session),
+                data: JSON.stringify(Session.query_data)
+            })
+        }
     }
 });
 
@@ -84,7 +137,8 @@ function query(method, url, data, cb) {
     request.get({
         method: method,
         url: url,
-        qs: qs.stringify(data)
+        qs: data
+        // qs: qs.stringify(data)
     }, cb)
 }
 
@@ -111,14 +165,14 @@ router.get('/refresh', function (req, res, next) {
         "client_secret": CLIENT_SECRET,
         "redirect_uri": REDIRECT_URI,
         "scope": SCOPE,
-        "refresh_token": req.session.query_data.refresh_token
+        "refresh_token": Session.query_data.refresh_token
     };
-    query('GET', PROTOCOL + '://' + req.session.query_data.domain + path, params, function (err, response, body) {
+    query('GET', PROTOCOL + '://' + Session.query_data.domain + path, params, function (err, response, body) {
         if (err) {
             next(err);
         } else {
-            req.session.query_data = body;
-            req.session.query_data.ts = Date.now();
+            Session.query_data = JSON.parse(body);
+            Session.ts = Date.now();
             res.redirect(PATH);
         }
     })
@@ -126,7 +180,7 @@ router.get('/refresh', function (req, res, next) {
 });
 
 function clearSession() {
-    req.session = null;
+    Session = {};
 }
 
 router.get('/clear', function (req, res) {
@@ -134,53 +188,6 @@ router.get('/clear', function (req, res) {
     res.redirect(PATH);
 });
 
-router.get('/test', function (req, res) {
-    var test = req.query.test;
-    var cb = function (err, response, body) {
-        res.render('example', {
-            path: PATH,
-            session: req.session,
-            expired: getExpired(req.session),
-            expiredTime: getExpiredTime(req.session),
-            data: JSON.stringify(body)
-        });
-    };
-    switch (test) {
-        case "user.current":
-            call(req.session.query_data.domain, "user.current", {
-                auth: req.session.query_data.access_token
-            }, cb);
-            break;
-        case "user.update":
-            call(req.session.query_data.domain, 'user.update', {
-                auth: req.session.query_data.access_token
-            }, cb);
-            break;
-        case "event.bind":
-            call(req.session.query_data.domain, 'event.bind', {
-                auth: req.session.query_data.access_token,
-                "EVENT": "ONCRMLEADADD",
-                "HANDLER": REDIRECT_URI + "/event"
-            }, cb);
-            break;
-        case "log.blogpost.add":
-            call(req.session.query_data.domain, 'log.blogpost.add', {
-                auth: req.session.query_data.access_token,
-                "POST_TITLE": "Hello world!",
-                "POST_MESSAGE": "Goodbye, cruel world :-("
-            }, cb);
-            break;
-        default:
-            res.render('example', {
-                path: PATH,
-                session: req.session,
-                expired: getExpired(req.session),
-                expiredTime: getExpiredTime(req.session),
-                data: JSON.stringify(req.session.query_data)
-            });
-    }
-
-});
 
 router.get('/event', function (req, res) {
     console.log(req.query);

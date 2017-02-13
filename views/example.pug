@@ -1,7 +1,9 @@
 extends layout
+
 block content
-    if session
-        include parts/_auth
-    else
-        inlucde parts/_refresh
+
+    if data
+        include parts/_refresh
         include parts/_main
+    else
+        include parts/_auth
